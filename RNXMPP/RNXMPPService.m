@@ -587,9 +587,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     XMPPJID *xmppjid = nil;
     if(JID){
         xmppjid = [XMPPJID jidWithString:JID];
+    } else {
+        xmppjid = xmppStream.myJID;
     }
 
-    [xmppStream sendElement:[XMPPvCardTemp iqvCardRequestForJID:xmppStream.myJID]];
+    [xmppStream sendElement:[XMPPvCardTemp iqvCardRequestForJID: xmppjid]];
 }
 
 @end
