@@ -46,36 +46,7 @@ RCT_EXPORT_MODULE();
     [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPLoginError" body:[error localizedDescription]];
 }
 
--(id)contentOf:(XMPPElement *)element{
-    NSMutableDictionary *res = [NSMutableDictionary dictionary];
-    if ([element respondsToSelector:@selector(attributesAsDictionary)]){
-        res = [element attributesAsDictionary];
-    }
-    if (element.children){
-        for (XMPPElement *child in element.children){
-            if (res[child.name] && ![res[child.name] isKindOfClass:[NSArray class]]){
-                res[child.name] = [NSMutableArray arrayWithObjects:res[child.name], nil];
-            }
-            if (res[child.name]){
-                [res[child.name] addObject:[self contentOf:child]];
-            } else {
-                if ([child.name isEqualToString:@"text"]){
-                    return [self contentOf:child];
-                } else {
-                    res[child.name] = [self contentOf:child];
-                }
-            }
-        }
-    }
-    if ([res count]){
-        return res;
-    } else {
-        return [element stringValue];
-    }
-}
-
 -(void)onMessage:(XMPPMessage *)message {
-    NSDictionary *res = [self contentOf:message];
     NSString *xml = [message compactXMLString];
     [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPStanza" body:xml];
 
@@ -86,13 +57,11 @@ RCT_EXPORT_MODULE();
 }
 
 -(void)onIQ:(XMPPIQ *)iq {
-    NSDictionary *res = [self contentOf:iq];
     NSString *xml = [iq compactXMLString];
     [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPStanza" body:xml];
 }
 
 -(void)onPresence:(XMPPPresence *)presence {
-    NSDictionary *res = [self contentOf:presence];
     NSString *xml = [presence compactXMLString];
     [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPStanza" body:xml];
 }
