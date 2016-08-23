@@ -35,10 +35,7 @@
 @interface RNXMPPService : NSObject
 {
     XMPPStream *xmppStream;
-    XMPPRoster *xmppRoster;
-    XMPPRosterMemoryStorage *xmppRosterStorage;
     XMPPReconnect *xmppReconnect;
-    XMPPMUC *xmppMUC;
     NSArray *trustedHosts;
     NSString *username;
     NSString *password;
@@ -55,13 +52,7 @@
 - (void)trustHosts:(NSArray *)hosts;
 - (BOOL)connect:(NSString *)myJID withPassword:(NSString *)myPassword auth:(AuthMethod)auth hostname:(NSString *)hostname port:(int)port;
 - (void)disconnect;
-- (void)sendMessage:(NSString *)text to:(NSString *)username thread:(NSString *)thread;
-- (void)sendPresence:(NSString *)to type:(NSString *)type;
-- (void)removeRoster:(NSString *)to;
--(void)fetchRoster;
 -(void)sendStanza:(NSString *)stanza;
-- (void)editVCard:(NSDictionary *)params;
-- (void)getVCard:(NSString *)JID;
 
 @end
 
