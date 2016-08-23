@@ -135,7 +135,7 @@ class XMPP extends EventEmitter {
 
     sendStanza(stanza){
         if (typeof stanza.root == 'function') {
-            stanza = stanza.root;
+            stanza = stanza.root();
         }
         if (typeof stanza != 'string') {
             stanza = stanza.toString();
