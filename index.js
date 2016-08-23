@@ -6,9 +6,6 @@ var ltx = require('ltx');
 var EventEmitter = require('events').EventEmitter;
 
 var map = {
-    'message' : 'RNXMPPMessage',
-    'iq': 'RNXMPPIQ',
-    'presence': 'RNXMPPPresence',
     'connect': 'RNXMPPConnect',
     'disconnect': 'RNXMPPDisconnect',
     'error': 'RNXMPPError',
@@ -39,14 +36,18 @@ class XMPP extends EventEmitter {
     onConnected(){
         console.log("Connected");
         this.isConnected = true;
+        this.emit('connect');
     }
 
     onLogin(){
         console.log("Logged");
         this.isLogged = true;
+        this.emit('login');
     }
 
     onDisconnected(error){
+        this.emit('end');
+
         var iqCallbacks = this.iqCallbacks;
         this.iqCallbacks = {};
         var ids = Object.keys(iqCallbacks);
@@ -71,6 +72,7 @@ class XMPP extends EventEmitter {
     onLoginError(text){
         this.isLogged = false;
         console.log("LoginError: "+text);
+        this.emit('loginError', new Error(text));
     }
 
     iq(iq, cb) {
