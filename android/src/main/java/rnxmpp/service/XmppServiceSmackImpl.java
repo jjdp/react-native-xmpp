@@ -10,24 +10,16 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.chat.Chat;
-import org.jivesoftware.smack.chat.ChatManager;
-import org.jivesoftware.smack.chat.ChatManagerListener;
-import org.jivesoftware.smack.chat.ChatMessageListener;
 import org.jivesoftware.smack.filter.StanzaTypeFilter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.Roster;
-import org.jivesoftware.smack.roster.RosterEntry;
-import org.jivesoftware.smack.roster.RosterLoadedListener;
 import org.jivesoftware.smack.sasl.SASLErrorException;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smack.util.XmlStringBuilder;
-import org.jivesoftware.smackx.vcardtemp.VCardManager;
-import org.jivesoftware.smackx.vcardtemp.packet.VCard;
 
 import android.os.AsyncTask;
 
@@ -45,12 +37,11 @@ import rnxmpp.ssl.UnsafeSSLContext;
  * Copyright (c) 2016. Teletronics. All rights reserved
  */
 
-public class XmppServiceSmackImpl implements XmppService, ChatManagerListener, StanzaListener, ConnectionListener, ChatMessageListener, RosterLoadedListener {
+public class XmppServiceSmackImpl implements XmppService, StanzaListener, ConnectionListener {
     XmppServiceListener xmppServiceListener;
     Logger logger = Logger.getLogger(XmppServiceSmackImpl.class.getName());
 
     XMPPTCPConnection connection;
-    Roster roster;
     List<String> trustedHosts = new ArrayList<>();
     String password;
 
@@ -95,12 +86,11 @@ public class XmppServiceSmackImpl implements XmppService, ChatManagerListener, S
         XMPPTCPConnectionConfiguration connectionConfiguration = confBuilder.build();
         connection = new XMPPTCPConnection(connectionConfiguration);
 
-        connection.addAsyncStanzaListener(this, new StanzaTypeFilter(IQ.class));
-        connection.addConnectionListener(this);
+        // Disable automatic roster request
+        Roster.getInstanceFor(connection).setRosterLoadedAtLogin(false);
 
-        ChatManager.getInstanceFor(connection).addChatListener(this);
-        roster = Roster.getInstanceFor(connection);
-        roster.addRosterLoadedListener(this);
+        connection.addAsyncStanzaListener(this, null);
+        connection.addConnectionListener(this);
 
         new AsyncTask<Void, Void, Void>() {
 
@@ -128,59 +118,8 @@ public class XmppServiceSmackImpl implements XmppService, ChatManagerListener, S
     }
 
     @Override
-    public void message(String text, String to, String thread) {
-        String chatIdentifier = (thread == null ? to : thread);
-
-        ChatManager chatManager = ChatManager.getInstanceFor(connection);
-        Chat chat = chatManager.getThreadChat(chatIdentifier);
-        if (chat == null) {
-            if (thread == null){
-                chat = chatManager.createChat(to, this);
-            }else{
-                chat = chatManager.createChat(to, thread, this);
-            }
-        }
-        try {
-            chat.sendMessage(text);
-        } catch (SmackException e) {
-            logger.log(Level.WARNING, "Could not send message", e);
-        }
-    }
-
-    @Override
-    public void presence(String to, String type) {
-        try {
-            connection.sendStanza(new Presence(Presence.Type.fromString(type), type, 1, Presence.Mode.fromString(type)));
-        } catch (SmackException.NotConnectedException e) {
-            logger.log(Level.WARNING, "Could not send presence", e);
-        }
-    }
-
-    @Override
-    public void removeRoster(String to) {
-        Roster roster = Roster.getInstanceFor(connection);
-        RosterEntry rosterEntry = roster.getEntry(to);
-        if (rosterEntry != null){
-            try {
-                roster.removeEntry(rosterEntry);
-            } catch (SmackException.NotLoggedInException | SmackException.NotConnectedException | XMPPException.XMPPErrorException | SmackException.NoResponseException e) {
-                logger.log(Level.WARNING, "Could not remove roster entry: " + to);
-            }
-        }
-    }
-
-    @Override
     public void disconnect() {
         connection.disconnect();
-    }
-
-    @Override
-    public void fetchRoster() {
-        try {
-            roster.reload();
-        } catch (SmackException.NotLoggedInException | SmackException.NotConnectedException e) {
-            logger.log(Level.WARNING, "Could not fetch roster", e);
-        }
     }
 
     public class StanzaPacket extends org.jivesoftware.smack.packet.Stanza {
@@ -210,13 +149,9 @@ public class XmppServiceSmackImpl implements XmppService, ChatManagerListener, S
     }
 
     @Override
-    public void chatCreated(Chat chat, boolean createdLocally) {
-        chat.addMessageListener(this);
-    }
-
-    @Override
     public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
-        this.xmppServiceListener.onIQ((IQ) packet);
+        logger.log(Level.WARNING, "Received stanza", packet.toString());
+        this.xmppServiceListener.onStanza(packet);
     }
 
     @Override
@@ -227,16 +162,6 @@ public class XmppServiceSmackImpl implements XmppService, ChatManagerListener, S
     @Override
     public void authenticated(XMPPConnection connection, boolean resumed) {
         this.xmppServiceListener.onLogin(connection.getUser(), password);
-    }
-
-    @Override
-    public void processMessage(Chat chat, Message message) {
-        this.xmppServiceListener.onMessage(message);
-    }
-
-    @Override
-    public void onRosterLoaded(Roster roster) {
-        this.xmppServiceListener.onRosterReceived(roster);
     }
 
     @Override
@@ -263,45 +188,5 @@ public class XmppServiceSmackImpl implements XmppService, ChatManagerListener, S
     public void reconnectionFailed(Exception e) {
         logger.log(Level.WARNING, "Could not reconnect", e);
 
-    }
-    
-    @Override
-    public void editVCard(final ReadableMap params){
-        VCard vCard = new VCard();
-
-        ReadableMapKeySetIterator iterator = params.keySetIterator();
-        while (iterator.hasNextKey()) {
-            String key = iterator.nextKey();
-            String value = params.getString(key);
-
-            if(key.contains("photo")){
-                vCard.setAvatar(value, "image/jpeg");
-            } else {
-                vCard.setField(key.toUpperCase(), value);
-            }
-        }
-
-        try {
-            VCardManager vCardManager = VCardManager.getInstanceFor(connection);
-            vCardManager.saveVCard(vCard);
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Could not save profile", e);
-        }
-    }
-
-    @Override
-    public void getVCard(String jid) {
-        try {
-            VCardManager vCardManager = VCardManager.getInstanceFor(connection);
-            VCard vCard = null;
-            if(jid != null && !jid.isEmpty()) {
-                vCard = vCardManager.loadVCard(jid);
-            } else {
-                vCard = vCardManager.loadVCard();
-            }
-            this.xmppServiceListener.onIQ(vCard);
-        } catch (Exception e) {
-            logger.log(Level.WARNING, "Could not get profile", e);
-        }
     }
 }

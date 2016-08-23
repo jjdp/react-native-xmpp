@@ -11,11 +11,7 @@ import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.roster.Roster;
-import org.jivesoftware.smack.roster.RosterEntry;
-import org.jivesoftware.smack.roster.RosterGroup;
-
-import rnxmpp.utils.Parser;
+import org.jivesoftware.smack.packet.Stanza;
 
 /**
  * Created by Kristian Frølund on 7/19/16.
@@ -26,13 +22,10 @@ public class RNXMPPCommunicationBridge implements XmppServiceListener {
 
     public static final String RNXMPP_ERROR =       "RNXMPPError";
     public static final String RNXMPP_LOGIN_ERROR = "RNXMPPLoginError";
-    public static final String RNXMPP_MESSAGE =     "RNXMPPMessage";
-    public static final String RNXMPP_ROSTER =      "RNXMPPRoster";
-    public static final String RNXMPP_IQ =          "RNXMPPIQ";
-    public static final String RNXMPP_PRESENCE =    "RNXMPPPresence";
     public static final String RNXMPP_CONNECT =     "RNXMPPConnect";
     public static final String RNXMPP_DISCONNECT =  "RNXMPPDisconnect";
     public static final String RNXMPP_LOGIN =       "RNXMPPLogin";
+    public static final String RNXMPP_STANZA =      "RNXMPPStanza";
     ReactContext reactContext;
 
     public RNXMPPCommunicationBridge(ReactContext reactContext) {
@@ -55,42 +48,8 @@ public class RNXMPPCommunicationBridge implements XmppServiceListener {
     }
 
     @Override
-    public void onMessage(Message message) {
-        WritableMap params = Arguments.createMap();
-        params.putString("thread", message.getThread());
-        params.putString("subject", message.getSubject());
-        params.putString("body", message.getBody());
-        params.putString("from", message.getFrom());
-        params.putString("src", message.toXML().toString());
-        sendEvent(reactContext, RNXMPP_MESSAGE, params);
-    }
-
-    @Override
-    public void onRosterReceived(Roster roster) {
-        WritableArray rosterResponse = Arguments.createArray();
-        for (RosterEntry rosterEntry : roster.getEntries()) {
-            WritableMap rosterProps = Arguments.createMap();
-            rosterProps.putString("username", rosterEntry.getUser());
-            rosterProps.putString("displayName", rosterEntry.getName());
-            WritableArray groupArray = Arguments.createArray();
-            for (RosterGroup rosterGroup : rosterEntry.getGroups()) {
-                groupArray.pushString(rosterGroup.getName());
-            }
-            rosterProps.putArray("groups", groupArray);
-            rosterProps.putString("subscription", rosterEntry.getType().toString());
-            rosterResponse.pushMap(rosterProps);
-        }
-        sendEvent(reactContext, RNXMPP_ROSTER, rosterResponse);
-    }
-
-    @Override
-    public void onIQ(IQ iq) {
-        sendEvent(reactContext, RNXMPP_IQ, Parser.parse(iq.toString()));
-    }
-
-    @Override
-    public void onPresence(Presence presence) {
-        sendEvent(reactContext, RNXMPP_PRESENCE, presence.toString());
+    public void onStanza(Stanza stanza) {
+        sendEvent(reactContext, RNXMPP_STANZA, stanza.toString());
     }
 
     @Override
