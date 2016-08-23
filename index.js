@@ -79,13 +79,13 @@ class XMPP extends EventEmitter {
         iq = iq.root();
 
         if (cb) {
-            if (!iq.id) {
+            if (!iq.attrs.id) {
                 // Auto-generate id
                 do {
-                    iq.id = Math.ceil(9999999 * Math.random());
-                } while(this.iqCallbacks.hasOwnProperty(iq.id));
+                    iq.attrs.id = Math.ceil(9999999 * Math.random());
+                } while(this.iqCallbacks.hasOwnProperty(iq.attrs.id));
             }
-            this.iqCallbacks[iq.id] = cb;
+            this.iqCallbacks[iq.attrs.id] = cb;
         }
 
         this.sendStanza(iq);
