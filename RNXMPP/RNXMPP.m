@@ -76,7 +76,8 @@ RCT_EXPORT_MODULE();
 
 -(void)onMessage:(XMPPMessage *)message {
     NSDictionary *res = [self contentOf:message];
-    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPMessage" body:res];
+    NSString *xml = [message compactXMLString];
+    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPStanza" body:xml];
 
 }
 
@@ -86,12 +87,14 @@ RCT_EXPORT_MODULE();
 
 -(void)onIQ:(XMPPIQ *)iq {
     NSDictionary *res = [self contentOf:iq];
-    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPIQ" body:res];
+    NSString *xml = [iq compactXMLString];
+    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPStanza" body:xml];
 }
 
 -(void)onPresence:(XMPPPresence *)presence {
     NSDictionary *res = [self contentOf:presence];
-    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPPresence" body:res];
+    NSString *xml = [presence compactXMLString];
+    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPStanza" body:xml];
 }
 
 -(void)onConnnect:(NSString *)username password:(NSString *)password {
