@@ -112,11 +112,11 @@ class XMPP extends EventEmitter {
     onIq(iq){
         var id = iq.attrs.id;
         var cb = this.iqCallbacks[id];
-        if (cb && iq.type == 'result') {
+        if (cb && iq.attrs.type == 'result') {
             delete this.iqCallbacks[id];
             cb(null, iq);
             return true;
-        } else if (cb && iq.type == 'error') {
+        } else if (cb && iq.attrs.type == 'error') {
             delete this.iqCallbacks[id];
 
             cb(new Error("Error: " + getStanzaError(iq)));
