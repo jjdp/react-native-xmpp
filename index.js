@@ -46,6 +46,7 @@ class XMPP extends EventEmitter {
     }
 
     onDisconnected(error){
+        console.log("onDisconnected", error);
         this.emit('end');
 
         var iqCallbacks = this.iqCallbacks;
@@ -54,7 +55,7 @@ class XMPP extends EventEmitter {
         for(var i = 0; i < ids.length; i++) {
             var cb = iqCallbacks[ids[i]];
             try {
-                cb(new Error('Disconnected'));
+                cb(new Error('Disconnected: ' + error));
             } catch (e) {
                 console.error(e.stack);
             }
@@ -92,15 +93,19 @@ class XMPP extends EventEmitter {
     }
 
     onStanza(stanzaStr){
-        console.log(`onStanza ${stanzaStr}`);
-        let stanza = ltx.parse(stanzaStr);
+        try {
+            console.log(`<< ${stanzaStr}`);
+            let stanza = ltx.parse(stanzaStr);
 
-        if (stanza.name == 'iq' && this.onIq(stanza)) {
-            return;
-        } else if (stanza.name == 'message' ||
-                   stanza.name == 'presence' ||
-                   stanza.name == 'iq') {
-            this.emit(stanza.name, stanza);
+            if (stanza.name == 'iq' && this.onIq(stanza)) {
+                return;
+            } else if (stanza.name == 'message' ||
+                       stanza.name == 'presence' ||
+                       stanza.name == 'iq') {
+                this.emit(stanza.name, stanza);
+            }
+        } catch (e) {
+            console.error(e.stack || e.message);
         }
     }
 
@@ -141,6 +146,7 @@ class XMPP extends EventEmitter {
             stanza = stanza.toString();
         }
 
+        console.log(">> " + stanza);
         RNXMPP.sendStanza(stanza);
     }
 
