@@ -30,7 +30,7 @@
   "_shasum": "d8be032c4ac527be20f53f486c573588e77f1375",
   "_from": "react-native-xmpp@*",
   "dependencies": {
-    "EventEmitter": "^1.0.0",
+    "events": "^1.1.1",
     "ltx": "^2.4.2"
   }
 }

@@ -3,7 +3,7 @@ var React = require('react-native');
 var {NativeAppEventEmitter, NativeModules} = React;
 var RNXMPP = NativeModules.RNXMPP;
 var ltx = require('ltx');
-var EventEmitter = require('EventEmitter');
+var EventEmitter = require('events').EventEmitter;
 
 var map = {
     'connect': 'RNXMPPConnect',
