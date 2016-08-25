@@ -167,11 +167,10 @@ function getStanzaError(stanza) {
                 child.attrs.xmlns == 'urn:ietf:params:xml:ns:xmpp-stanzas' &&
                 child.name;
             if (errorCode) {
-                cb(new Error(errorCode));
-                return true;
+                return new Error(errorCode);
             }
         }
     }
 
-    cb(new Error("Error in: " + stanza.toString()));
+    return new Error("Error in: " + stanza.toString());
 }
