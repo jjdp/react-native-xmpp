@@ -105,7 +105,7 @@ class XMPP extends EventEmitter {
                 this.emit(stanza.name, stanza);
             }
         } catch (e) {
-            console.error(e.stack || e.message);
+            console.warn("stanza handling error: " + e.message + "\n" + e.stack);
         }
     }
 
