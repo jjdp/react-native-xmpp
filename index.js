@@ -12,12 +12,21 @@ var map = {
     'loginError': 'RNXMPPLoginError',
     'login': 'RNXMPPLogin',
     'stanza': 'RNXMPPStanza',
-}
+};
+const EVENTS = {
+    CONNECT: 'connect',
+    LOGIN: 'login',
+    LOGIN_ERROR: 'loginError',
+    END: 'end',
+    STANZA: 'stanza',
+};
 
 class XMPP extends EventEmitter {
     PLAIN = RNXMPP.PLAIN;
     SCRAM = RNXMPP.SCRAMSHA1;
     MD5 = RNXMPP.DigestMD5;
+
+    EVENTS = EVENTS;
 
     constructor(){
         super()
@@ -36,18 +45,18 @@ class XMPP extends EventEmitter {
     onConnected(){
         console.log("Connected");
         this.isConnected = true;
-        this.emit('connect');
+        this.emit(EVENTS.CONNECT);
     }
 
     onLogin(){
         console.log("Logged");
         this.isLogged = true;
-        this.emit('login');
+        this.emit(EVENTS.LOGIN);
     }
 
     onDisconnected(error){
         console.log("onDisconnected", error);
-        this.emit('end');
+        this.emit(EVENTS.END);
 
         var iqCallbacks = this.iqCallbacks;
         this.iqCallbacks = {};
@@ -73,7 +82,7 @@ class XMPP extends EventEmitter {
     onLoginError(text){
         this.isLogged = false;
         console.log("LoginError: "+text);
-        this.emit('loginError', new Error(text));
+        this.emit(XMPP.LOGIN_ERROR, new Error(text));
     }
 
     iq(iq, cb) {
@@ -102,7 +111,7 @@ class XMPP extends EventEmitter {
             } else if (stanza.name == 'message' ||
                        stanza.name == 'presence' ||
                        stanza.name == 'iq') {
-                this.emit(stanza.name, stanza);
+                this.emit(EVENTS.STANZA, stanza);
             }
         } catch (e) {
             console.warn("stanza handling error: " + e.message + "\n" + e.stack);
@@ -122,7 +131,7 @@ class XMPP extends EventEmitter {
             cb(new Error("Error: " + getStanzaError(iq)));
             return true;
         } else {
-            // Not handled, let onStanza() emit('stanza', iq);
+            // Not handled, let onStanza() emit(STANZA, iq);
             return false;
         }
     }
