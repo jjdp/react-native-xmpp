@@ -28,5 +28,9 @@
   "gitHead": "90d97bb04536db9341c85e77c1dfb972e450e424",
   "_id": "react-native-xmpp@0.0.2",
   "_shasum": "d8be032c4ac527be20f53f486c573588e77f1375",
-  "_from": "react-native-xmpp@*"
+  "_from": "react-native-xmpp@*",
+  "dependencies": {
+    "events": "^1.1.1",
+    "ltx": "^2.4.2"
+  }
 }

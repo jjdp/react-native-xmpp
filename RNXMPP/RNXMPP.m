@@ -46,52 +46,20 @@ RCT_EXPORT_MODULE();
     [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPLoginError" body:[error localizedDescription]];
 }
 
--(id)contentOf:(XMPPElement *)element{
-    NSMutableDictionary *res = [NSMutableDictionary dictionary];
-    if ([element respondsToSelector:@selector(attributesAsDictionary)]){
-        res = [element attributesAsDictionary];
-    }
-    if (element.children){
-        for (XMPPElement *child in element.children){
-            if (res[child.name] && ![res[child.name] isKindOfClass:[NSArray class]]){
-                res[child.name] = [NSMutableArray arrayWithObjects:res[child.name], nil];
-            }
-            if (res[child.name]){
-                [res[child.name] addObject:[self contentOf:child]];
-            } else {
-                if ([child.name isEqualToString:@"text"]){
-                    return [self contentOf:child];
-                } else {
-                    res[child.name] = [self contentOf:child];
-                }
-            }
-        }
-    }
-    if ([res count]){
-        return res;
-    } else {
-        return [element stringValue];
-    }
-}
-
 -(void)onMessage:(XMPPMessage *)message {
-    NSDictionary *res = [self contentOf:message];
-    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPMessage" body:res];
+    NSString *xml = [message compactXMLString];
+    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPStanza" body:xml];
 
-}
-
--(void)onRosterReceived:(NSArray *)list {
-    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPRoster" body:list];
 }
 
 -(void)onIQ:(XMPPIQ *)iq {
-    NSDictionary *res = [self contentOf:iq];
-    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPIQ" body:res];
+    NSString *xml = [iq compactXMLString];
+    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPStanza" body:xml];
 }
 
 -(void)onPresence:(XMPPPresence *)presence {
-    NSDictionary *res = [self contentOf:presence];
-    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPPresence" body:res];
+    NSString *xml = [presence compactXMLString];
+    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPStanza" body:xml];
 }
 
 -(void)onConnnect:(NSString *)username password:(NSString *)password {
@@ -119,44 +87,14 @@ RCT_EXPORT_METHOD(connect:(NSString *)jid password:(NSString *)password auth:(Au
     [[RNXMPPService sharedInstance] connect:jid withPassword:password auth:auth hostname:hostname port:port];
 }
 
-RCT_EXPORT_METHOD(message:(NSString *)text to:(NSString *)to thread:(NSString *)threadId){
-    [RNXMPPService sharedInstance].delegate = self;
-    [[RNXMPPService sharedInstance] sendMessage:text to:to thread:threadId];
-}
-
-RCT_EXPORT_METHOD(presence:(NSString *)to type:(NSString *)type){
-    [RNXMPPService sharedInstance].delegate = self;
-    [[RNXMPPService sharedInstance] sendPresence:to type:type];
-}
-
-RCT_EXPORT_METHOD(removeRoster:(NSString *)to){
-    [RNXMPPService sharedInstance].delegate = self;
-    [[RNXMPPService sharedInstance] removeRoster:to];
-}
-
 RCT_EXPORT_METHOD(disconnect){
     [RNXMPPService sharedInstance].delegate = self;
     [[RNXMPPService sharedInstance] disconnect];
 }
 
-RCT_EXPORT_METHOD(fetchRoster){
-    [RNXMPPService sharedInstance].delegate = self;
-    [[RNXMPPService sharedInstance] fetchRoster];
-}
-
 RCT_EXPORT_METHOD(sendStanza:(NSString *)stanza){
     [RNXMPPService sharedInstance].delegate = self;
     [[RNXMPPService sharedInstance] sendStanza:stanza];
-}
-
-RCT_EXPORT_METHOD(editVCard:(NSDictionary *)params){
-    [RNXMPPService sharedInstance].delegate = self;
-    [[RNXMPPService sharedInstance] editVCard:params];
-}
-
-RCT_EXPORT_METHOD(getVCard:(NSString *)jid){
-    [RNXMPPService sharedInstance].delegate = self;
-    [[RNXMPPService sharedInstance] getVCard:jid];
 }
 
 - (NSDictionary *)constantsToExport

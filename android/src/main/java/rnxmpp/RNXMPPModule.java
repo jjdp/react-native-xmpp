@@ -45,49 +45,13 @@ public class RNXMPPModule extends ReactContextBaseJavaModule implements rnxmpp.s
 
     @Override
     @ReactMethod
-    public void message(String text, String to, String thread){
-        this.xmppService.message(text, to, thread);
-    }
-
-    @Override
-    @ReactMethod
-    public void presence(String to, String type) {
-        this.xmppService.presence(to, type);
-    }
-
-    @Override
-    @ReactMethod
-    public void removeRoster(String to) {
-        this.xmppService.removeRoster(to);
-    }
-
-    @Override
-    @ReactMethod
     public void disconnect() {
         this.xmppService.disconnect();
     }
 
     @Override
     @ReactMethod
-    public void fetchRoster() {
-        this.xmppService.fetchRoster();
-    }
-
-    @Override
-    @ReactMethod
     public void sendStanza(String stanza) {
         this.xmppService.sendStanza(stanza);
-    }
-
-    @Override
-    @ReactMethod
-    public void editVCard(final ReadableMap options) {
-        this.xmppService.editVCard(options);
-    }
-
-    @Override
-    @ReactMethod
-    public void getVCard(final String jid) {
-        this.xmppService.getVCard(jid);
     }
 }

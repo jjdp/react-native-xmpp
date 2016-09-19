@@ -5,7 +5,6 @@
 #import "XMPPLogging.h"
 #import "XMPPReconnect.h"
 #import "XMPPUser.h"
-#import "XMPPvCardTemp.h"
 #import "DDLog.h"
 #import "DDTTYLogger.h"
 #import <CFNetwork/CFNetwork.h>
@@ -96,33 +95,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
     xmppReconnect = [[XMPPReconnect alloc] init];
 
-    // Setup roster
-    //
-    // The XMPPRoster handles the xmpp protocol stuff related to the roster.
-    // The storage for the roster is abstracted.
-    // So you can use any storage mechanism you want.
-    // You can store it all in memory, or use core data and store it on disk, or use core data with an in-memory store,
-    // or setup your own using raw SQLite, or create your own storage mechanism.
-    // You can do it however you like! It's your application.
-    // But you do need to provide the roster with some storage facility.
-
-    xmppRosterStorage = [[XMPPRosterMemoryStorage alloc] init];
-
-    xmppRoster = [[XMPPRoster alloc] initWithRosterStorage:xmppRosterStorage];
-
-    xmppRoster.autoFetchRoster = NO;
-    xmppRoster.autoAcceptKnownPresenceSubscriptionRequests = YES;
-
-    // Setup vCard support
-    //
-    // The vCard Avatar module works in conjuction with the standard vCard Temp module to download user avatars.
-    // The XMPPRoster will automatically integrate with XMPPvCardAvatarModule to cache roster photos in the roster.
-
-//    xmppvCardStorage = [XMPPvCardCoreDataStorage sharedInstance];
-//    xmppvCardTempModule = [[XMPPvCardTempModule alloc] initWithvCardStorage:xmppvCardStorage];
-//
-//    xmppvCardAvatarModule = [[XMPPvCardAvatarModule alloc] initWithvCardTempModule:xmppvCardTempModule];
-
     // Setup capabilities
     //
     // The XMPPCapabilities module handles all the complex hashing of the caps protocol (XEP-0115).
@@ -151,17 +123,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     // Activate xmpp modules
 
     [xmppReconnect         activate:xmppStream];
-    [xmppRoster            activate:xmppStream];
-    [xmppRoster addDelegate:self delegateQueue:dispatch_get_main_queue()];
-//    [xmppvCardTempModule   activate:xmppStream];
-//    [xmppvCardAvatarModule activate:xmppStream];
 //    [xmppCapabilities      activate:xmppStream];
 //
 
-
-//    xmppMUC = [[XMPPMUC alloc] init];
-//    [xmppMUC activate:xmppStream];
-//    [xmppMUC addDelegate:self delegateQueue:dispatch_get_main_queue()];
 
     // Add ourself as a delegate to anything we may be interested in
 
@@ -190,7 +154,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 {
     [xmppStream removeDelegate:self];
 
-    [xmppMUC deactivate];
     [xmppReconnect         deactivate];
     [xmppStream disconnect];
 
@@ -444,44 +407,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     return NO;
 }
 
-- (void)xmppRosterDidPopulate:(XMPPRosterMemoryStorage *)sender {
-    DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-    NSArray *users = [sender unsortedUsers];
-    NSMutableArray *list = [NSMutableArray array];
-    for (XMPPUserMemoryStorageObject *user in users){
-        [list addObject:@{
-                        @"username": [[user jid] user],
-                        @"subscription": [user subscription],
-                        @"displayName": [user displayName],
-                        @"groups": [user groups],
-                        }];
-    }
-    [self.delegate onRosterReceived:list];
-
-}
-
-- (void)xmppRoster:(XMPPRosterMemoryStorage *)sender
-    didAddResource:(XMPPResourceMemoryStorageObject *)resource
-          withUser:(XMPPUserMemoryStorageObject *)user {
-
-    DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-}
-
-- (void)xmppRoster:(XMPPRosterMemoryStorage *)sender
-    didRemoveResource:(XMPPResourceMemoryStorageObject *)resource withUser:(XMPPUserMemoryStorageObject *)user {
-
-    DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-}
-
-- (void)xmppRoster:(XMPPRosterMemoryStorage *)sender
-    didUpdateResource:(XMPPResourceMemoryStorageObject *)resource withUser:(XMPPUserMemoryStorageObject *)user {
-
-    DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-}
-
-
-
-
 - (void)xmppStream:(XMPPStream *)sender didReceiveMessage:(XMPPMessage *)message
 {
     DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
@@ -513,85 +438,12 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 }
 
-- (void)xmppRoom:(XMPPRoom *)sender didReceiveMessage:(XMPPMessage *)message fromOccupant:(XMPPJID *)occupantJID {
-    DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-}
-
--(void)sendMessage:(NSString *)text to:(NSString *)to thread:(NSString *)thread {
-    if (!isXmppConnected){
-        [self.delegate onError:[NSError errorWithDomain:@"xmpp" code:0 userInfo:@{NSLocalizedDescriptionKey: @"Server is not connected, please reconnect"}]];
-        return;
-    }
-    DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
-    NSXMLElement *body = [NSXMLElement elementWithName:@"body"];
-    [body setStringValue:text];
-
-    NSXMLElement *msg = [NSXMLElement elementWithName:@"message"];
-    [msg addAttributeWithName:@"type" stringValue:@"chat"];
-    [msg addAttributeWithName:@"to" stringValue: to];
-    
-    if (thread != nil) {
-        [msg addChild:[NSXMLElement elementWithName:@"thread" stringValue:thread]];
-    }
-    
-    [msg addChild:body];
-    [xmppStream sendElement:msg];
-}
-
--(void)sendPresence:(NSString *)to type:(NSString *)type {
-    if (!isXmppConnected){
-        [self.delegate onError:[NSError errorWithDomain:@"xmpp" code:0 userInfo:@{NSLocalizedDescriptionKey: @"Server is not connected, please reconnect"}]];
-        return;
-    }
-    XMPPPresence *presence = [XMPPPresence presenceWithType:type to:[XMPPJID jidWithString:to]];
-    [xmppStream sendElement:presence];
-}
-
 -(void)sendStanza:(NSString *)stanza {
     NSData *data = [stanza dataUsingEncoding:NSUTF8StringEncoding];
     NSError *error;
     DDXMLDocument *doc = [[DDXMLDocument alloc] initWithData:data options:0 error:&error];
     DDXMLElement *el = [doc rootElement];
     [xmppStream sendElement:el];
-}
-
--(void)removeRoster:(NSString *)to {
-    [xmppRoster removeUser:[XMPPJID jidWithString:to]];
-}
-
--(void)fetchRoster {
-    [xmppRoster fetchRoster];
-}
-
-- (void)editVCard:(NSDictionary *)params{
-
-    NSXMLElement *vCardXML = [NSXMLElement elementWithName:@"vCard" xmlns:@"vcard-temp"];
-    XMPPvCardTemp *newvCardTemp = [XMPPvCardTemp vCardTempFromElement:vCardXML];
-
-    for(NSString *key in params.allKeys){
-        NSString *value = [params objectForKey:key];
-        if([[key lowercaseString] containsString:@"photo"]){
-            NSData *avatarData = [[NSData alloc]initWithBase64EncodedString:value options:NSDataBase64DecodingIgnoreUnknownCharacters];
-            [newvCardTemp setPhoto:avatarData];
-        } else {
-            [newvCardTemp setValue:value forKey:key];
-        }
-    }
-
-    XMPPIQ *iq = [XMPPIQ iqWithType:@"set" to:nil elementID:[xmppStream generateUUID] child:newvCardTemp];
-    [xmppStream sendElement:iq];
-}
-
-
-- (void)getVCard:(NSString *)JID {
-    XMPPJID *xmppjid = nil;
-    if(JID){
-        xmppjid = [XMPPJID jidWithString:JID];
-    } else {
-        xmppjid = xmppStream.myJID;
-    }
-
-    [xmppStream sendElement:[XMPPvCardTemp iqvCardRequestForJID: xmppjid]];
 }
 
 @end

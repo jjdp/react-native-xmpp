@@ -18,26 +18,8 @@ public interface XmppService {
     void connect(String jid, String password, String authMethod, String hostname, Integer port);
 
     @ReactMethod
-    void message(String text, String to, String thread);
-
-    @ReactMethod
-    void presence(String to, String type);
-
-    @ReactMethod
-    void removeRoster(String to);
-
-    @ReactMethod
     void disconnect();
 
     @ReactMethod
-    void fetchRoster();
-
-    @ReactMethod
     void sendStanza(String stanza);
-
-    @ReactMethod
-    void editVCard(final ReadableMap params);
-
-    @ReactMethod
-    void getVCard(final String jid);
 }
