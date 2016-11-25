@@ -17,6 +17,7 @@ const EVENTS = {
     CONNECT: 'connect',
     LOGIN: 'login',
     LOGIN_ERROR: 'loginError',
+    ERROR: 'error',
     END: 'end',
     STANZA: 'stanza',
 };
@@ -77,6 +78,7 @@ class XMPP extends EventEmitter {
 
     onError(text){
         console.log("Error: "+text);
+        this.emit(XMPP.ERROR, new Error(text));
     }
 
     onLoginError(text){
