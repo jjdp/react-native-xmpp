@@ -17,6 +17,7 @@
 #import "XMPPRoster.h"
 #import "XMPPRosterMemoryStorage.h"
 #import "RNXMPPConstants.h"
+#import "XMPPAutoPing.h"
 
 @protocol RNXMPPServiceDelegate <NSObject>
 
@@ -47,7 +48,7 @@
 
 @property (nonatomic, strong, readonly) XMPPStream *xmppStream;
 @property (nonatomic, strong, readonly) XMPPReconnect *xmppReconnect;
-@property (nonatomic, strong, readonly) XMPPReconnect *xmppAutoPing;
+@property (nonatomic, strong, readonly) XMPPAutoPing *xmppAutoPing;
 @property (nonatomic, weak) id<RNXMPPServiceDelegate> delegate;
 
 +(RNXMPPService *) sharedInstance;
