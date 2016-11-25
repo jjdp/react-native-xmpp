@@ -36,6 +36,7 @@
 {
     XMPPStream *xmppStream;
     XMPPReconnect *xmppReconnect;
+    XMPPAutoPing *xmppAutoPing;
     NSArray *trustedHosts;
     NSString *username;
     NSString *password;
@@ -46,6 +47,7 @@
 
 @property (nonatomic, strong, readonly) XMPPStream *xmppStream;
 @property (nonatomic, strong, readonly) XMPPReconnect *xmppReconnect;
+@property (nonatomic, strong, readonly) XMPPReconnect *xmppAutoPing;
 @property (nonatomic, weak) id<RNXMPPServiceDelegate> delegate;
 
 +(RNXMPPService *) sharedInstance;

@@ -36,6 +36,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 @synthesize xmppStream;
 @synthesize xmppReconnect;
+@synthesize xmppAutoPing;
 
 +(RNXMPPService *) sharedInstance {
     static RNXMPPService *sharedInstance = nil;
@@ -125,6 +126,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     [xmppReconnect         activate:xmppStream];
 //    [xmppCapabilities      activate:xmppStream];
 //
+    xmppAutoPing =  [[XMPPAutoPing alloc] init];
+    xmppAutoPing.pingInterval = 10.0;
+    [xmppAutoPing          activate:xmppStream];
 
 
     // Add ourself as a delegate to anything we may be interested in
@@ -225,7 +229,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     username = myJID;
     password = myPassword;
     authMethod = auth;
-    
+
     xmppStream.hostName = (hostname ? hostname : [username componentsSeparatedByString:@"@"][1]);
     if(port){
         xmppStream.hostPort = port;
@@ -320,7 +324,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     // The delegate method should likely have code similar to this,
     // but will presumably perform some extra security code stuff.
     // For example, allowing a specific self-signed certificate that is known to the app.
-    
+
     if ([trustedHosts containsObject:xmppStream.hostName]) {
         completionHandler(YES);
     }
