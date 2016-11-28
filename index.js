@@ -78,13 +78,13 @@ class XMPP extends EventEmitter {
 
     onError(text){
         console.log("Error: "+text);
-        this.emit(XMPP.ERROR, new Error(text));
+        this.emit(EVENTS.ERROR, new Error(text));
     }
 
     onLoginError(text){
         this.isLogged = false;
         console.log("LoginError: "+text);
-        this.emit(XMPP.LOGIN_ERROR, new Error(text));
+        this.emit(EVENTS.LOGIN_ERROR, new Error(text));
     }
 
     iq(iq, cb) {
