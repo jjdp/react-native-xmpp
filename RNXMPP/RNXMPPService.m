@@ -124,6 +124,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     // Activate xmpp modules
 
     [xmppReconnect         activate:xmppStream];
+    [xmppReconnect addDelegate:self delegateQueue:dispatch_get_main_queue()];
 //    [xmppCapabilities      activate:xmppStream];
 //
     xmppAutoPing =  [[XMPPAutoPing alloc] init];
@@ -253,6 +254,22 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 {
     [self goOffline];
     [xmppStream disconnect];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark XMPPReconnect Delegate
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+- (BOOL)xmppReconnect:(XMPPReconnect *)sender shouldAttemptAutoReconnect:(SCNetworkReachabilityFlags)reachabilityFlags
+{
+    DDLogVerbose(@"---------- xmppReconnect:shouldAttemptAutoReconnect: ----------");
+
+    return YES;
+}
+
+- (void)xmppReconnect:(XMPPReconnect *)sender didDetectAccidentalDisconnect:(SCNetworkReachabilityFlags)connectionFlags
+{
+    DDLogVerbose(@"---------- xmppReconnect:didDetectAccidentalDisconnect: ----------");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
