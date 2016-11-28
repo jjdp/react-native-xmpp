@@ -172,6 +172,7 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
     @Override
     public void connectionClosed() {
         logger.log(Level.INFO, "Connection was closed.");
+        this.xmppServiceListener.onDisconnect(null);
     }
 
     @Override
@@ -187,6 +188,6 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
     @Override
     public void reconnectionFailed(Exception e) {
         logger.log(Level.WARNING, "Could not reconnect", e);
-
+        this.xmppServiceListener.onDisconnect(e);
     }
 }
