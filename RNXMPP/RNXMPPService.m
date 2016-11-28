@@ -270,6 +270,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)xmppReconnect:(XMPPReconnect *)sender didDetectAccidentalDisconnect:(SCNetworkReachabilityFlags)connectionFlags
 {
     DDLogVerbose(@"---------- xmppReconnect:didDetectAccidentalDisconnect: ----------");
+
+    [self.delegate onDisconnect: nil];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -456,7 +458,6 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     isXmppConnected = NO;
 
     [self.delegate onDisconnect:error];
-
 }
 
 -(void)sendStanza:(NSString *)stanza {
