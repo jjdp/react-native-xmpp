@@ -57,7 +57,7 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
     }
 
     @Override
-    public void connect(String jid, String password, String authMethod, String hostname, Integer port) {
+    public void setup(String jid, String password, String authMethod, String hostname, Integer port) {
         final String[] jidParts = jid.split("@");
         String[] serviceNameParts = jidParts[1].split("/");
         String serviceName = serviceNameParts[0];
@@ -94,6 +94,14 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
         connection.addAsyncStanzaListener(this, null);
         connection.addConnectionListener(this);
 
+        connect();
+    }
+
+    public void connect() {
+        if (connection == null) {
+            throw new RuntimeException("Cannot connect no connection!");
+        }
+
         new AsyncTask<Void, Void, Void>() {
 
             @Override
@@ -101,7 +109,7 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
                 try {
                     connection.connect().login();
                 } catch (XMPPException | SmackException | IOException e) {
-                    logger.log(Level.SEVERE, "Could not login for user " + jidParts[0], e);
+                    logger.log(Level.SEVERE, "Could not login user", e);
                     if (e instanceof SASLErrorException){
                         XmppServiceSmackImpl.this.xmppServiceListener.onLoginError(((SASLErrorException) e).getSASLFailure().toString());
                     }else{
