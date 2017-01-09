@@ -36,6 +36,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 @synthesize xmppStream;
 @synthesize xmppReconnect;
+@synthesize xmppStreamStorage;
+@synthesize xmppStreamMgt;
 @synthesize xmppAutoPing;
 
 +(RNXMPPService *) sharedInstance {
@@ -87,6 +89,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         xmppStream.enableBackgroundingOnSocket = YES;
     }
 #endif
+
+    // Setup xep-0198
+    xmppStreamStorage = [[XMPPStreamManagementMemoryStorage alloc] init];
+    xmppStreamMgt = [[XMPPStreamManagement alloc] initWithStorage: xmppStreamStorage];
+    [xmppStreamMgt activate: xmppStream];
 
     // Setup reconnect
     //
