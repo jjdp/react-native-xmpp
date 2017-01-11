@@ -87,6 +87,11 @@ RCT_EXPORT_METHOD(setup:(NSString *)jid password:(NSString *)password auth:(Auth
     [[RNXMPPService sharedInstance] setup:jid withPassword:password auth:auth hostname:hostname port:port];
 }
 
+RCT_EXPORT_METHOD(connect){
+    [RNXMPPService sharedInstance].delegate = self;
+    [[RNXMPPService sharedInstance] connect];
+}
+
 RCT_EXPORT_METHOD(disconnect){
     [RNXMPPService sharedInstance].delegate = self;
     [[RNXMPPService sharedInstance] disconnect];

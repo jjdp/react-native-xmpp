@@ -241,8 +241,14 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     xmppStream.hostName = (hostname ? hostname : [username componentsSeparatedByString:@"@"][1]);
     if(port){
         xmppStream.hostPort = port;
+    } else {
+        xmppStream.hostPort = 5222;
     }
 
+    return YES;
+}
+
+- (BOOL)connect
     NSError *error = nil;
     if (![xmppStream connectWithTimeout:30 error:&error])
     {

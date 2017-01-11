@@ -57,6 +57,7 @@
 +(RNXMPPService *) sharedInstance;
 - (void)trustHosts:(NSArray *)hosts;
 - (BOOL)setup:(NSString *)myJID withPassword:(NSString *)myPassword auth:(AuthMethod)auth hostname:(NSString *)hostname port:(int)port;
+- (BOOL)connect;
 - (void)disconnect;
 -(void)sendStanza:(NSString *)stanza;
 
