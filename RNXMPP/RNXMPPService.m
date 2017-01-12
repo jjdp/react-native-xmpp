@@ -248,7 +248,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     return YES;
 }
 
-- (BOOL)connect
+- (BOOL)connect {
     NSError *error = nil;
     if (![xmppStream connectWithTimeout:30 error:&error])
     {
