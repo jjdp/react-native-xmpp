@@ -254,7 +254,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     {
         DDLogError(@"Error connecting: %@", error);
         if (self.delegate){
-            [self.delegate onLoginError:error];
+            [self.delegate onLoginError: error];
         }
 
         return NO;

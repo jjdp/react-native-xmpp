@@ -147,6 +147,7 @@ class XMPP extends EventEmitter {
             hostname = (username+'@/').split('@')[1].split('/')[0];
         }
         React.NativeModules.RNXMPP.setup(username, password, auth, hostname, port);
+        React.NativeModules.RNXMPP.connect();
     }
 
     reconnect() {
