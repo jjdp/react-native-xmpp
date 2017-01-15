@@ -39,8 +39,14 @@ public class RNXMPPModule extends ReactContextBaseJavaModule implements rnxmpp.s
 
     @Override
     @ReactMethod
-    public void connect(String jid, String password, String authMethod, String hostname, Integer port){
-        this.xmppService.connect(jid, password, authMethod, hostname, port);
+    public void setup(String jid, String password, String authMethod, String hostname, Integer port){
+        this.xmppService.setup(jid, password, authMethod, hostname, port);
+    }
+
+    @Override
+    @ReactMethod
+    public void connect(){
+        this.xmppService.connect();
     }
 
     @Override

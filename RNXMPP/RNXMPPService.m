@@ -36,6 +36,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 
 @synthesize xmppStream;
 @synthesize xmppReconnect;
+@synthesize xmppStreamStorage;
+@synthesize xmppStreamMgt;
 @synthesize xmppAutoPing;
 
 +(RNXMPPService *) sharedInstance {
@@ -87,6 +89,11 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
         xmppStream.enableBackgroundingOnSocket = YES;
     }
 #endif
+
+    // Setup xep-0198
+    xmppStreamStorage = [[XMPPStreamManagementMemoryStorage alloc] init];
+    xmppStreamMgt = [[XMPPStreamManagement alloc] initWithStorage: xmppStreamStorage];
+    [xmppStreamMgt activate: xmppStream];
 
     // Setup reconnect
     //
@@ -216,7 +223,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 #pragma mark Connect/disconnect
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-- (BOOL)connect:(NSString *)myJID withPassword:(NSString *)myPassword auth:(AuthMethod)auth hostname:(NSString *)hostname port:(int)port
+- (BOOL)setup:(NSString *)myJID withPassword:(NSString *)myPassword auth:(AuthMethod)auth hostname:(NSString *)hostname port:(int)port
 {
     if (![xmppStream isDisconnected]) {
         [self disconnect];
@@ -234,14 +241,20 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     xmppStream.hostName = (hostname ? hostname : [username componentsSeparatedByString:@"@"][1]);
     if(port){
         xmppStream.hostPort = port;
+    } else {
+        xmppStream.hostPort = 5222;
     }
 
+    return YES;
+}
+
+- (BOOL)connect {
     NSError *error = nil;
     if (![xmppStream connectWithTimeout:30 error:&error])
     {
         DDLogError(@"Error connecting: %@", error);
         if (self.delegate){
-            [self.delegate onLoginError:error];
+            [self.delegate onLoginError: error];
         }
 
         return NO;
