@@ -7,9 +7,15 @@
 //
 
 #import "RNXMPP.h"
+#if __has_include(<React/RCTBridge.h>)
+#import <React/RCTBridge.h>
+#import <React/RCTEventDispatcher.h>
+#import <React/RCTConvert.h>
+#else
 #import "RCTBridge.h"
 #import "RCTEventDispatcher.h"
 #import "RCTConvert.h"
+#endif
 #import "RNXMPPConstants.h"
 
 const NSString *PLAIN_AUTH = @"PLAIN";
