@@ -7,9 +7,15 @@
 //
 
 #import "RNXMPP.h"
+#if __has_include(<React/RCTBridge.h>)
+#import <React/RCTBridge.h>
+#import <React/RCTEventDispatcher.h>
+#import <React/RCTConvert.h>
+#else
 #import "RCTBridge.h"
 #import "RCTEventDispatcher.h"
 #import "RCTConvert.h"
+#endif
 #import "RNXMPPConstants.h"
 
 const NSString *PLAIN_AUTH = @"PLAIN";
@@ -82,9 +88,14 @@ RCT_EXPORT_METHOD(trustHosts:(NSArray *)hosts){
     [[RNXMPPService sharedInstance] trustHosts:hosts];
 }
 
-RCT_EXPORT_METHOD(connect:(NSString *)jid password:(NSString *)password auth:(AuthMethod) auth hostname:(NSString *)hostname port:(int)port){
+RCT_EXPORT_METHOD(setup:(NSString *)jid password:(NSString *)password auth:(AuthMethod) auth hostname:(NSString *)hostname port:(int)port){
     [RNXMPPService sharedInstance].delegate = self;
-    [[RNXMPPService sharedInstance] connect:jid withPassword:password auth:auth hostname:hostname port:port];
+    [[RNXMPPService sharedInstance] setup:jid withPassword:password auth:auth hostname:hostname port:port];
+}
+
+RCT_EXPORT_METHOD(connect){
+    [RNXMPPService sharedInstance].delegate = self;
+    [[RNXMPPService sharedInstance] connect];
 }
 
 RCT_EXPORT_METHOD(disconnect){

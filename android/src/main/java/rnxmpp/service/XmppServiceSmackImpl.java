@@ -57,7 +57,7 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
     }
 
     @Override
-    public void connect(String jid, String password, String authMethod, String hostname, Integer port) {
+    public void setup(String jid, String password, String authMethod, String hostname, Integer port) {
         final String[] jidParts = jid.split("@");
         String[] serviceNameParts = jidParts[1].split("/");
         String serviceName = serviceNameParts[0];
@@ -84,6 +84,8 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
             confBuilder.setCustomSSLContext(UnsafeSSLContext.INSTANCE.getContext());
         }
         XMPPTCPConnectionConfiguration connectionConfiguration = confBuilder.build();
+        XMPPTCPConnection.setUseStreamManagementDefault(true);
+        XMPPTCPConnection.setUseStreamManagementResumptionDefault(true);
         connection = new XMPPTCPConnection(connectionConfiguration);
 
         // Disable automatic roster request
@@ -92,6 +94,14 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
         connection.addAsyncStanzaListener(this, null);
         connection.addConnectionListener(this);
 
+        connect();
+    }
+
+    public void connect() {
+        if (connection == null) {
+            throw new RuntimeException("Cannot connect no connection!");
+        }
+
         new AsyncTask<Void, Void, Void>() {
 
             @Override
@@ -99,7 +109,7 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
                 try {
                     connection.connect().login();
                 } catch (XMPPException | SmackException | IOException e) {
-                    logger.log(Level.SEVERE, "Could not login for user " + jidParts[0], e);
+                    logger.log(Level.SEVERE, "Could not login user", e);
                     if (e instanceof SASLErrorException){
                         XmppServiceSmackImpl.this.xmppServiceListener.onLoginError(((SASLErrorException) e).getSASLFailure().toString());
                     }else{
@@ -172,6 +182,7 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
     @Override
     public void connectionClosed() {
         logger.log(Level.INFO, "Connection was closed.");
+        this.xmppServiceListener.onDisconnect(null);
     }
 
     @Override
@@ -187,6 +198,6 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
     @Override
     public void reconnectionFailed(Exception e) {
         logger.log(Level.WARNING, "Could not reconnect", e);
-
+        this.xmppServiceListener.onDisconnect(e);
     }
 }

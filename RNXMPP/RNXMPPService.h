@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "XMPP.h"
+#import "XMPPStreamManagementMemoryStorage.h"
 #import "XMPPReconnect.h"
 #import "XMPPDateTimeProfiles.h"
 #import "NSDate+XMPPDateTimeProfiles.h"
@@ -17,6 +18,7 @@
 #import "XMPPRoster.h"
 #import "XMPPRosterMemoryStorage.h"
 #import "RNXMPPConstants.h"
+#import "XMPPAutoPing.h"
 
 @protocol RNXMPPServiceDelegate <NSObject>
 
@@ -36,6 +38,7 @@
 {
     XMPPStream *xmppStream;
     XMPPReconnect *xmppReconnect;
+    XMPPAutoPing *xmppAutoPing;
     NSArray *trustedHosts;
     NSString *username;
     NSString *password;
@@ -46,11 +49,15 @@
 
 @property (nonatomic, strong, readonly) XMPPStream *xmppStream;
 @property (nonatomic, strong, readonly) XMPPReconnect *xmppReconnect;
+@property (nonatomic, strong, readonly) XMPPStreamManagementMemoryStorage *xmppStreamStorage;
+@property (nonatomic, strong, readonly) XMPPStreamManagement *xmppStreamMgt;
+@property (nonatomic, strong, readonly) XMPPAutoPing *xmppAutoPing;
 @property (nonatomic, weak) id<RNXMPPServiceDelegate> delegate;
 
 +(RNXMPPService *) sharedInstance;
 - (void)trustHosts:(NSArray *)hosts;
-- (BOOL)connect:(NSString *)myJID withPassword:(NSString *)myPassword auth:(AuthMethod)auth hostname:(NSString *)hostname port:(int)port;
+- (BOOL)setup:(NSString *)myJID withPassword:(NSString *)myPassword auth:(AuthMethod)auth hostname:(NSString *)hostname port:(int)port;
+- (BOOL)connect;
 - (void)disconnect;
 -(void)sendStanza:(NSString *)stanza;
 

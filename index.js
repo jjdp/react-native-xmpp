@@ -17,6 +17,7 @@ const EVENTS = {
     CONNECT: 'connect',
     LOGIN: 'login',
     LOGIN_ERROR: 'loginError',
+    ERROR: 'error',
     END: 'end',
     STANZA: 'stanza',
 };
@@ -77,12 +78,13 @@ class XMPP extends EventEmitter {
 
     onError(text){
         console.log("Error: "+text);
+        this.emit(EVENTS.ERROR, new Error(text));
     }
 
     onLoginError(text){
         this.isLogged = false;
         console.log("LoginError: "+text);
-        this.emit(XMPP.LOGIN_ERROR, new Error(text));
+        this.emit(EVENTS.LOGIN_ERROR, new Error(text));
     }
 
     iq(iq, cb) {
@@ -144,7 +146,12 @@ class XMPP extends EventEmitter {
         if (!hostname) {
             hostname = (username+'@/').split('@')[1].split('/')[0];
         }
-        React.NativeModules.RNXMPP.connect(username, password, auth, hostname, port);
+        React.NativeModules.RNXMPP.setup(username, password, auth, hostname, port);
+        React.NativeModules.RNXMPP.connect();
+    }
+
+    reconnect() {
+        React.NativeModules.RNXMPP.connect();
     }
 
     sendStanza(stanza){
