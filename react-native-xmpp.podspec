@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
-  s.name         = "react-native-xmpp"
-  s.version      = "0.2.1"
+  s.name         = "react-native-basic-xmpp"
+  s.version      = "1.0.0"
   s.license      = "ISC"
   s.summary      = "XMPP Library for React Native"
   s.source_files  = "ios/RNXMPP/*.{h,m}"
