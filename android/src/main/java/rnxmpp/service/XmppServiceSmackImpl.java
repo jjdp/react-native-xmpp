@@ -15,7 +15,6 @@ import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
-import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.sasl.SASLErrorException;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
@@ -87,9 +86,6 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
         XMPPTCPConnection.setUseStreamManagementDefault(true);
         XMPPTCPConnection.setUseStreamManagementResumptionDefault(true);
         connection = new XMPPTCPConnection(connectionConfiguration);
-
-        // Disable automatic roster request
-        Roster.getInstanceFor(connection).setRosterLoadedAtLogin(false);
 
         connection.addAsyncStanzaListener(this, null);
         connection.addConnectionListener(this);
