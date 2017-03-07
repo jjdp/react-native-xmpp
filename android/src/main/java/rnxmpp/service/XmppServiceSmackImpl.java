@@ -89,7 +89,9 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
         connection = new XMPPTCPConnection(connectionConfiguration);
 
         // Disable automatic roster request
-        Roster.getInstanceFor(connection).setRosterLoadedAtLogin(false);
+        Roster roster = Roster.getInstanceFor(connection);
+        roster.setRosterLoadedAtLogin(false);
+        roster.setSubscriptionMode(Roster.SubscriptionMode.manual);
 
         connection.addAsyncStanzaListener(this, null);
         connection.addConnectionListener(this);
