@@ -5,6 +5,9 @@ var RNXMPP = NativeModules.RNXMPP;
 var ltx = require('ltx');
 var EventEmitter = require('events').EventEmitter;
 
+const log = (...args) => console.log('react-native-xmpp:', ...args);
+const warn = (...args) => console.warn('react-native-xmpp:', ...args);
+
 var map = {
     connect: 'RNXMPPConnect',
     disconnect: 'RNXMPPDisconnect',
@@ -53,19 +56,19 @@ class XMPP extends EventEmitter {
     }
 
     onConnected() {
-        console.log('Connected');
+        log('Connected to XMPP server');
         this.isConnected = true;
         this.emit(EVENTS.CONNECT);
     }
 
     onLogin() {
-        console.log('Logged');
+        log('Logged in');
         this.isLogged = true;
         this.emit(EVENTS.LOGIN);
     }
 
     onDisconnected(error) {
-        console.log('onDisconnected', error);
+        log('Disconnected', error);
         this.emit(EVENTS.END);
 
         var iqCallbacks = this.iqCallbacks;
@@ -74,26 +77,33 @@ class XMPP extends EventEmitter {
         for (var i = 0; i < ids.length; i++) {
             var cb = iqCallbacks[ids[i]];
             try {
-                cb(new Error('Disconnected: ' + error));
+                cb(new Error(`Disconnected: ${error}`));
             } catch (e) {
-                console.error(e.stack);
+                warn(
+                    new Error(
+                        `Could not execute iq callback ${i} after disconnect`,
+                    ),
+                    error,
+                    e,
+                );
             }
         }
 
-        console.log('Disconnected, error' + error);
         this.isConnected = false;
         this.isLogged = false;
     }
 
     onError(text) {
-        console.log('Error: ' + text);
-        this.emit(EVENTS.ERROR, new Error(text));
+        log('Error', text);
+        const error = text ? new Error(text) : new Error('Unknown error');
+        this.emit(EVENTS.ERROR, error);
     }
 
     onLoginError(text) {
+        log('Login error', text);
         this.isLogged = false;
-        console.log('LoginError: ' + text);
-        this.emit(EVENTS.LOGIN_ERROR, new Error(text));
+        const error = text ? new Error(text) : new Error('Unknown login error');
+        this.emit(EVENTS.LOGIN_ERROR, error);
     }
 
     iq(iq, cb) {
@@ -114,7 +124,7 @@ class XMPP extends EventEmitter {
 
     onStanza(stanzaStr) {
         try {
-            console.log(`<< ${stanzaStr}`);
+            log(`<< ${stanzaStr}`);
             let stanza = ltx.parse(stanzaStr);
 
             if (stanza.name == 'iq' && this.onIq(stanza)) {
@@ -127,9 +137,7 @@ class XMPP extends EventEmitter {
                 this.emit(EVENTS.STANZA, stanza);
             }
         } catch (e) {
-            console.warn(
-                'stanza handling error: ' + e.message + '\n' + e.stack,
-            );
+            warn('Error while trying to read stanza', e);
         }
     }
 
@@ -143,7 +151,7 @@ class XMPP extends EventEmitter {
         } else if (cb && iq.attrs.type == 'error') {
             delete this.iqCallbacks[id];
 
-            cb(new Error('Error: ' + getStanzaError(iq)));
+            cb(new Error(`Error: ${getStanzaError(iq)}`));
             return true;
         } else {
             // Not handled, let onStanza() emit(STANZA, iq);
@@ -163,7 +171,7 @@ class XMPP extends EventEmitter {
         port = 5222,
     ) {
         if (!hostname) {
-            hostname = (username + '@/').split('@')[1].split('/')[0];
+            hostname = `${username}@/`.split('@')[1].split('/')[0];
         }
         React.NativeModules.RNXMPP.setup(
             username,
@@ -187,7 +195,7 @@ class XMPP extends EventEmitter {
             stanza = stanza.toString();
         }
 
-        console.log('>> ' + stanza);
+        log(`>> ${stanza}`);
         RNXMPP.sendStanza(stanza);
     }
 
@@ -214,5 +222,5 @@ function getStanzaError(stanza) {
         }
     }
 
-    return new Error('Error in: ' + stanza.toString());
+    return new Error(`Error in: ${stanza.toString()}`);
 }
