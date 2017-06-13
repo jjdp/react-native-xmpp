@@ -5,9 +5,6 @@ var RNXMPP = NativeModules.RNXMPP;
 var ltx = require('ltx');
 var EventEmitter = require('events').EventEmitter;
 
-const log = (...args) => console.log('react-native-xmpp:', ...args);
-const warn = (...args) => console.warn('react-native-xmpp:', ...args);
-
 var map = {
     connect: 'RNXMPPConnect',
     disconnect: 'RNXMPPDisconnect',
@@ -56,19 +53,16 @@ class XMPP extends EventEmitter {
     }
 
     onConnected() {
-        log('Connected to XMPP server');
         this.isConnected = true;
         this.emit(EVENTS.CONNECT);
     }
 
     onLogin() {
-        log('Logged in');
         this.isLogged = true;
         this.emit(EVENTS.LOGIN);
     }
 
     onDisconnected(error) {
-        log('Disconnected', error);
         this.emit(EVENTS.END);
 
         var iqCallbacks = this.iqCallbacks;
@@ -79,13 +73,10 @@ class XMPP extends EventEmitter {
             try {
                 cb(new Error(`Disconnected: ${error}`));
             } catch (e) {
-                warn(
-                    new Error(
-                        `Could not execute iq callback ${i} after disconnect`,
-                    ),
-                    error,
-                    e,
-                );
+                this.emit(EVENTS.ERROR,
+                    `Could not execute iq callback ${i} after disconnect`)
+                this.emit(EVENTS.ERROR, error)
+                this.emit(EVENTS.ERROR, e)
             }
         }
 
@@ -94,13 +85,11 @@ class XMPP extends EventEmitter {
     }
 
     onError(text) {
-        log('Error', text);
         const error = text ? new Error(text) : new Error('Unknown error');
         this.emit(EVENTS.ERROR, error);
     }
 
     onLoginError(text) {
-        log('Login error', text);
         this.isLogged = false;
         const error = text ? new Error(text) : new Error('Unknown login error');
         this.emit(EVENTS.LOGIN_ERROR, error);
@@ -124,7 +113,6 @@ class XMPP extends EventEmitter {
 
     onStanza(stanzaStr) {
         try {
-            log(`<< ${stanzaStr}`);
             let stanza = ltx.parse(stanzaStr);
 
             if (stanza.name == 'iq' && this.onIq(stanza)) {
@@ -137,7 +125,7 @@ class XMPP extends EventEmitter {
                 this.emit(EVENTS.STANZA, stanza);
             }
         } catch (e) {
-            warn('Error while trying to read stanza', e);
+            this.emit(EVENTS.ERROR, e)
         }
     }
 
@@ -195,7 +183,6 @@ class XMPP extends EventEmitter {
             stanza = stanza.toString();
         }
 
-        log(`>> ${stanza}`);
         RNXMPP.sendStanza(stanza);
     }
 
