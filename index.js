@@ -64,6 +64,9 @@ class XMPP extends EventEmitter {
 
     onDisconnected(error) {
         this.emit(EVENTS.END);
+        if (error) {
+            this.emit(EVENTS.ERROR, error);
+        }
 
         var iqCallbacks = this.iqCallbacks;
         this.iqCallbacks = {};
@@ -74,9 +77,7 @@ class XMPP extends EventEmitter {
                 cb(new Error(`Disconnected: ${error}`));
             } catch (e) {
                 this.emit(EVENTS.ERROR,
-                    `Could not execute iq callback ${i} after disconnect`)
-                this.emit(EVENTS.ERROR, error)
-                this.emit(EVENTS.ERROR, e)
+                    `Could not execute iq callback ${i} after disconnect: ${e}`);
             }
         }
 
