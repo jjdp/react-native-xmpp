@@ -1,4 +1,4 @@
-# react-native-xmpp
+# react-native-basic-xmpp
 XMPP library for React Native
 
 Simple interface for native XMPP communication (only iOS supported at this moment) using iOS XMPPFramework
@@ -11,7 +11,7 @@ XmppDemo uses Flux approach (check its XmppStore) to communicate with sample XMP
 ## Example
 
 ```
-var XMPP = require('react-native-xmpp');
+var XMPP = require('react-native-basic-xmpp');
 
 // optional callbacks
 XMPP.on('message', (message)=>console.log("MESSAGE:"+JSON.stringify(message)));
@@ -40,6 +40,6 @@ XMPP.disconnect();
 
 
 ## Getting started
-1. `npm install react-native-xmpp --save`
-2. `rnpm link react-native-xmpp`
+1. `npm install react-native-basic-xmpp --save`
+2. `rnpm link react-native-basic-xmpp`
 3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRNXMPP.a**, ***libresolv** and **libxml2**
