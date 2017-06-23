@@ -152,7 +152,7 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
     public void sendStanza(String stanza) {
         if (connection == null) {
             logger.log(Level.WARNING, "Connection has not been initialized yet, cannot send stanza " + stanza);
-            return
+            return;
         }
 
         StanzaPacket packet = new StanzaPacket(stanza);
