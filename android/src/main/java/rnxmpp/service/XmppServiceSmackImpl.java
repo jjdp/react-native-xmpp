@@ -107,7 +107,21 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
             @Override
             protected Void doInBackground(Void... params) {
                 try {
-                    connection.connect().login();
+
+                    /*
+                     * Normally, the reconnection logic would be handled by
+                     * the ReconnectionManager, but it seems that this does
+                     * not work reasonably well on Android. Therefore, we
+                     * provide this naive implementation ourselves.
+                     *
+                     * See https://stackoverflow.com/a/38178025
+                     */
+                    if (!connection.isConnected()) {
+                        connection.connect();
+                    }
+                    if (!connection.isAuthenticated()) {
+                        connection.login();
+                    }
                 } catch (XMPPException | SmackException | IOException e) {
                     logger.log(Level.SEVERE, "Could not login user", e);
                     if (e instanceof SASLErrorException){
