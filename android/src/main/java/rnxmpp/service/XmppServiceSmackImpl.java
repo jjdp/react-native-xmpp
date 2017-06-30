@@ -24,7 +24,6 @@ import org.jivesoftware.smack.util.XmlStringBuilder;
 import android.os.AsyncTask;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -63,35 +62,28 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
         String[] serviceNameParts = jidParts[1].split("/");
         String serviceName = serviceNameParts[0];
 
-        XMPPTCPConnectionConfiguration.Builder confBuilder;
-        XMPPTCPConnectionConfiguration connectionConfiguration;
-        try {
-            confBuilder = XMPPTCPConnectionConfiguration.builder()
-                    .setServiceName(serviceName)
-                    .setUsernameAndPassword(jidParts[0], password)
-                    .setConnectTimeout(3000)
-                    //.setDebuggerEnabled(true)
-                    .setSecurityMode(ConnectionConfiguration.SecurityMode.required);
+        XMPPTCPConnectionConfiguration.Builder confBuilder = XMPPTCPConnectionConfiguration.builder()
+                .setServiceName(serviceName)
+                .setUsernameAndPassword(jidParts[0], password)
+                .setConnectTimeout(3000)
+                //.setDebuggerEnabled(true)
+                .setSecurityMode(ConnectionConfiguration.SecurityMode.required);
 
-            if (serviceNameParts.length>1){
-                confBuilder.setResource(serviceNameParts[1]);
-            } else {
-                confBuilder.setResource(Long.toHexString(Double.doubleToLongBits(Math.random())));
-            }
-            if (hostname != null){
-                confBuilder.setHost(hostname);
-            }
-            if (port != null){
-                confBuilder.setPort(port);
-            }
-            if (trustedHosts.contains(hostname) || (hostname == null && trustedHosts.contains(serviceName))){
-                confBuilder.setCustomSSLContext(UnsafeSSLContext.INSTANCE.getContext());
-            }
-            connectionConfiguration = confBuilder.build();
-        } catch(UnknownHostException e) {
-            this.xmppServiceListener.onError(e);
-            return;
+        if (serviceNameParts.length>1){
+            confBuilder.setResource(serviceNameParts[1]);
+        } else {
+            confBuilder.setResource(Long.toHexString(Double.doubleToLongBits(Math.random())));
         }
+        if (hostname != null){
+            confBuilder.setHost(hostname);
+        }
+        if (port != null){
+            confBuilder.setPort(port);
+        }
+        if (trustedHosts.contains(hostname) || (hostname == null && trustedHosts.contains(serviceName))){
+            confBuilder.setCustomSSLContext(UnsafeSSLContext.INSTANCE.getContext());
+        }
+        XMPPTCPConnectionConfiguration connectionConfiguration = confBuilder.build();
         XMPPTCPConnection.setUseStreamManagementDefault(true);
         XMPPTCPConnection.setUseStreamManagementResumptionDefault(true);
         connection = new XMPPTCPConnection(connectionConfiguration);
@@ -203,7 +195,6 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
 
     @Override
     public void connectionClosedOnError(Exception e) {
-        logger.log(Level.WARNING, "Could not connect", e);
         this.xmppServiceListener.onDisconnect(e);
     }
 
