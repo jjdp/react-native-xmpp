@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/costacruise/react-native-xmpp.git"
+    "url": "https://github.com/jjdp/react-native-xmpp.git"
   },
   "keywords": [
     "xmpp",
@@ -20,9 +20,9 @@
   },
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/costacruise/react-native-xmpp/issues"
+    "url": "https://github.com/jjdp/react-native-xmpp/issues"
   },
-  "homepage": "https://github.com/costacruise/react-native-xmpp#readme",
+  "homepage": "https://github.com/jjdp/react-native-xmpp#readme",
   "readme": "# react-native-xmpp\nXMPP library for React Native\n",
   "readmeFilename": "README.md",
   "dependencies": {
