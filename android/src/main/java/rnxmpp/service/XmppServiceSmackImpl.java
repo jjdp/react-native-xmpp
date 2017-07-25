@@ -95,6 +95,7 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
 
         connection.addAsyncStanzaListener(this, null);
         connection.addConnectionListener(this);
+        connection.addStanzaAcknowledgedListener(this);
     }
 
     public void connect() {
