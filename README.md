@@ -20,8 +20,11 @@ XMPP.on('disconnect', (message)=>console.log("DISCONNECTED!"));
 // Warning: Do not use this in production( Security will be compromised. ).
 XMPP.trustHosts(['chat.google.com']);
 
-// connect
+// set-up and connect
 XMPP.connect(MYJID, MYPASSWORD);
+
+// reconnect
+XMPP.reconnect();
 
 // send stanza
 XMPP.sendStanza(stringStanza);
