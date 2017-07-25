@@ -118,13 +118,9 @@ class XMPP extends EventEmitter {
 
             if (stanza.name == 'iq' && this.onIq(stanza)) {
                 return;
-            } else if (
-                stanza.name == 'message' ||
-                stanza.name == 'presence' ||
-                stanza.name == 'iq'
-            ) {
+            //message, presence, iq, ack    
+            } else
                 this.emit(EVENTS.STANZA, stanza);
-            }
         } catch (e) {
             this.emit(EVENTS.ERROR, e)
         }
