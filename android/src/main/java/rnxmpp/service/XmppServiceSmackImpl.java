@@ -1,4 +1,4 @@
-package rnxmpp.service;
+﻿package rnxmpp.service;
 
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
@@ -10,16 +10,14 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.filter.StanzaTypeFilter;
-import org.jivesoftware.smack.packet.IQ;
-import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.sasl.SASLErrorException;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smack.util.XmlStringBuilder;
+
+import org.jxmpp.stringprep.XmppStringprepException;
 
 import android.os.AsyncTask;
 
@@ -28,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.lang.InterruptedException;
 
 import rnxmpp.ssl.UnsafeSSLContext;
 
@@ -43,6 +42,7 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
 
     XMPPTCPConnection connection;
     List<String> trustedHosts = new ArrayList<>();
+    String JID;
     String password;
 
     public XmppServiceSmackImpl(XmppServiceListener xmppServiceListener) {
@@ -58,44 +58,52 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
 
     @Override
     public void setup(String jid, String password, String authMethod, String hostname, Integer port) {
+        JID = jid;
+
         final String[] jidParts = jid.split("@");
         String[] serviceNameParts = jidParts[1].split("/");
         String serviceName = serviceNameParts[0];
 
-        XMPPTCPConnectionConfiguration.Builder confBuilder = XMPPTCPConnectionConfiguration.builder()
-                .setServiceName(serviceName)
+        try {
+            XMPPTCPConnectionConfiguration.Builder confBuilder = XMPPTCPConnectionConfiguration.builder()
+                .setXmppDomain(serviceName)
                 .setUsernameAndPassword(jidParts[0], password)
                 .setConnectTimeout(3000)
                 //.setDebuggerEnabled(true)
                 .setSecurityMode(ConnectionConfiguration.SecurityMode.required);
 
-        if (serviceNameParts.length>1){
-            confBuilder.setResource(serviceNameParts[1]);
-        } else {
-            confBuilder.setResource(Long.toHexString(Double.doubleToLongBits(Math.random())));
-        }
-        if (hostname != null){
-            confBuilder.setHost(hostname);
-        }
-        if (port != null){
-            confBuilder.setPort(port);
-        }
-        if (trustedHosts.contains(hostname) || (hostname == null && trustedHosts.contains(serviceName))){
-            confBuilder.setCustomSSLContext(UnsafeSSLContext.INSTANCE.getContext());
-        }
-        XMPPTCPConnectionConfiguration connectionConfiguration = confBuilder.build();
-        XMPPTCPConnection.setUseStreamManagementDefault(true);
-        XMPPTCPConnection.setUseStreamManagementResumptionDefault(true);
-        connection = new XMPPTCPConnection(connectionConfiguration);
+            if (serviceNameParts.length > 1) {
+                confBuilder.setResource(serviceNameParts[1]);
+            } else {
+                confBuilder.setResource(Long.toHexString(Double.doubleToLongBits(Math.random())));
+            }
+            if (hostname != null) {
+                confBuilder.setHost(hostname);
+            }
+            if (port != null) {
+                confBuilder.setPort(port);
+            }
+            if (trustedHosts.contains(hostname) || (hostname == null && trustedHosts.contains(serviceName))){
+                confBuilder.setCustomSSLContext(UnsafeSSLContext.INSTANCE.getContext());
+            }
 
-        // Disable automatic roster request
-        Roster roster = Roster.getInstanceFor(connection);
-        roster.setRosterLoadedAtLogin(false);
-        roster.setSubscriptionMode(Roster.SubscriptionMode.manual);
+            XMPPTCPConnectionConfiguration connectionConfiguration = confBuilder.build();
+            XMPPTCPConnection.setUseStreamManagementDefault(true);
+            XMPPTCPConnection.setUseStreamManagementResumptionDefault(true);
+            connection = new XMPPTCPConnection(connectionConfiguration);
 
-        connection.addAsyncStanzaListener(this, null);
-        connection.addConnectionListener(this);
-        connection.addStanzaAcknowledgedListener(this);
+            // Disable automatic roster request
+            Roster roster = Roster.getInstanceFor(connection);
+            roster.setRosterLoadedAtLogin(false);
+            roster.setSubscriptionMode(Roster.SubscriptionMode.manual);
+
+            connection.addAsyncStanzaListener(this, null);
+            connection.addConnectionListener(this);
+            connection.addStanzaAcknowledgedListener(this);
+        } catch (XmppStringprepException e) {
+            logger.log(Level.SEVERE, "Could not setup user", e);
+            this.xmppServiceListener.onError(e);
+        };
     }
 
     public void connect() {
@@ -123,11 +131,11 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
                     if (!connection.isAuthenticated()) {
                         connection.login();
                     }
-                } catch (XMPPException | SmackException | IOException e) {
+                } catch (InterruptedException| XMPPException | SmackException | IOException e) {
                     logger.log(Level.SEVERE, "Could not login user", e);
-                    if (e instanceof SASLErrorException){
+                    if (e instanceof SASLErrorException) {
                         XmppServiceSmackImpl.this.xmppServiceListener.onLoginError(((SASLErrorException) e).getSASLFailure().toString());
-                    }else{
+                    } else {
                         XmppServiceSmackImpl.this.xmppServiceListener.onError(e);
                     }
 
@@ -156,6 +164,11 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
          }
 
          @Override
+         public String toString() {
+            return xmlString;
+         };
+
+         @Override
          public XmlStringBuilder toXML() {
              XmlStringBuilder xml = new XmlStringBuilder();
              xml.append(this.xmlString);
@@ -173,25 +186,25 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
         StanzaPacket packet = new StanzaPacket(stanza);
         try {
             connection.sendPacket(packet);
-        } catch (SmackException e) {
+        } catch (InterruptedException | SmackException e) {
             logger.log(Level.WARNING, "Could not send stanza", e);
         }
     }
 
     @Override
-    public void processPacket(Stanza packet) throws SmackException.NotConnectedException {
-        logger.log(Level.WARNING, "Received stanza", packet.toString());
+    public void processStanza(Stanza packet) throws SmackException.NotConnectedException {
+        logger.log(Level.WARNING, "Received stanza: " + packet.toXML());
         this.xmppServiceListener.onStanza(packet);
     }
 
     @Override
     public void connected(XMPPConnection connection) {
-        this.xmppServiceListener.onConnnect(connection.getUser(), password);
+        this.xmppServiceListener.onConnect(JID, password);
     }
 
     @Override
     public void authenticated(XMPPConnection connection, boolean resumed) {
-        this.xmppServiceListener.onLogin(connection.getUser(), password);
+        this.xmppServiceListener.onLogin(JID, password);
     }
 
     @Override

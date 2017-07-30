@@ -11,7 +11,7 @@ public interface XmppServiceListener {
     void onLoginError(String errorMessage);
     void onLoginError(Exception e);
     void onStanza(Stanza stanza);
-    void onConnnect(String username, String password);
+    void onConnect(String username, String password);
     void onDisconnect(Exception e);
     void onLogin(String username, String password);
 }

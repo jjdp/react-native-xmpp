@@ -1,4 +1,4 @@
-package rnxmpp.service;
+﻿package rnxmpp.service;
 
 import android.support.annotation.Nullable;
 
@@ -49,11 +49,11 @@ public class RNXMPPCommunicationBridge implements XmppServiceListener {
 
     @Override
     public void onStanza(Stanza stanza) {
-        sendEvent(reactContext, RNXMPP_STANZA, stanza.toString());
+        sendEvent(reactContext, RNXMPP_STANZA, stanza.toXML().toString());
     }
 
     @Override
-    public void onConnnect(String username, String password) {
+    public void onConnect(String username, String password) {
         WritableMap params = Arguments.createMap();
         params.putString("username", username);
         params.putString("password", password);
