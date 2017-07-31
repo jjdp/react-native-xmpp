@@ -1,4 +1,4 @@
-﻿package rnxmpp.service;
+package rnxmpp.service;
 
 import android.support.annotation.Nullable;
 
@@ -62,7 +62,8 @@ public class RNXMPPCommunicationBridge implements XmppServiceListener {
 
     @Override
     public void onDisconnect(Exception e) {
-        sendEvent(reactContext, RNXMPP_DISCONNECT, e.getLocalizedMessage());
+        if(e != null) sendEvent(reactContext, RNXMPP_DISCONNECT, e.getLocalizedMessage());
+        else sendEvent(reactContext, RNXMPP_DISCONNECT, null);
     }
 
     @Override
