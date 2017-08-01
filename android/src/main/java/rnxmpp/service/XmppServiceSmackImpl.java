@@ -1,4 +1,4 @@
-﻿package rnxmpp.service;
+package rnxmpp.service;
 
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
