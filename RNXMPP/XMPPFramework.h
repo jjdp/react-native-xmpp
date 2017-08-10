@@ -27,21 +27,9 @@
 // List the modules you're using here.
 
 #import "XMPPReconnect.h"
-#import "XMPPDateTimeProfiles.h"
-#import "NSDate+XMPPDateTimeProfiles.h"
 
-#import "XMPPRoster.h"
-#import "XMPPRosterCoreDataStorage.h"
-
-#import "XMPPvCardTempModule.h"
-#import "XMPPvCardAvatarModule.h"
-#import "XMPPvCardCoreDataStorage.h"
-
-#import "XMPPCapabilities.h"
-#import "XMPPCapabilitiesCoreDataStorage.h"
-
-#import "XMPPMUC.h"
-#import "XMPPRoomCoreDataStorage.h"
+//#import "XMPPCapabilities.h"
+//#import "XMPPCapabilitiesCoreDataStorage.h"
 
 // xep-0198
 #import "XMPPStreamManagement.h"
