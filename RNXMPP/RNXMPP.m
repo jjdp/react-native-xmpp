@@ -55,7 +55,6 @@ RCT_EXPORT_MODULE();
 -(void)onMessage:(XMPPMessage *)message {
     NSString *xml = [message compactXMLString];
     [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPStanza" body:xml];
-
 }
 
 -(void)onIQ:(XMPPIQ *)iq {
@@ -68,7 +67,11 @@ RCT_EXPORT_MODULE();
     [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPStanza" body:xml];
 }
 
--(void)onConnnect:(NSString *)username password:(NSString *)password {
+-(void)onReceiveAck:(NSArray *)stanzaIds {
+    [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPReceiveAckIos" body:stanzaIds];
+}
+
+-(void)onConnect:(NSString *)username password:(NSString *)password {
     [self.bridge.eventDispatcher sendAppEventWithName:@"RNXMPPConnect" body:@{@"username":username, @"password":password}];
 }
 

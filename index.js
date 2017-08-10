@@ -12,6 +12,7 @@ var map = {
     loginError: 'RNXMPPLoginError',
     login: 'RNXMPPLogin',
     stanza: 'RNXMPPStanza',
+    ackIos: 'RNXMPPReceiveAckIos'
 };
 const EVENTS = {
     CONNECT: 'connect',
@@ -20,6 +21,7 @@ const EVENTS = {
     ERROR: 'error',
     END: 'end',
     STANZA: 'stanza',
+    ACKIOS: 'receiveAckIos'
 };
 
 class XMPP extends EventEmitter {
@@ -50,6 +52,7 @@ class XMPP extends EventEmitter {
         );
         NativeAppEventEmitter.addListener(map.login, this.onLogin.bind(this));
         NativeAppEventEmitter.addListener(map.stanza, this.onStanza.bind(this));
+        NativeAppEventEmitter.addListener(map.ackIos, this.onReceiveAckIos.bind(this));
     }
 
     onConnected() {
@@ -146,6 +149,11 @@ class XMPP extends EventEmitter {
             // Not handled, let onStanza() emit(STANZA, iq);
             return false;
         }
+    }
+
+    //array of stanzaIds
+    onReceiveAckIos(stanzaIds) {
+        this.emit(EVENTS.ACKIOS, stanzaIds);
     }
 
     trustHosts(hosts) {

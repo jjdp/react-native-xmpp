@@ -38,7 +38,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 @synthesize xmppReconnect;
 @synthesize xmppStreamStorage;
 @synthesize xmppStreamMgt;
-@synthesize xmppAutoPing;
+//@synthesize xmppAutoPing;
 
 +(RNXMPPService *) sharedInstance {
     static RNXMPPService *sharedInstance = nil;
@@ -93,6 +93,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     // Setup xep-0198
     xmppStreamStorage = [[XMPPStreamManagementMemoryStorage alloc] init];
     xmppStreamMgt = [[XMPPStreamManagement alloc] initWithStorage: xmppStreamStorage];
+    [xmppStreamMgt addDelegate:self delegateQueue:dispatch_get_main_queue()];
     [xmppStreamMgt activate: xmppStream];
 
     // Setup reconnect
@@ -134,9 +135,9 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     [xmppReconnect addDelegate:self delegateQueue:dispatch_get_main_queue()];
 //    [xmppCapabilities      activate:xmppStream];
 //
-    xmppAutoPing =  [[XMPPAutoPing alloc] init];
-    xmppAutoPing.pingInterval = 10.0;
-    [xmppAutoPing          activate:xmppStream];
+//    xmppAutoPing =  [[XMPPAutoPing alloc] init];
+//    xmppAutoPing.pingInterval = 10.0;
+//    [xmppAutoPing          activate:xmppStream];
 
 
     // Add ourself as a delegate to anything we may be interested in
@@ -288,6 +289,16 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma mark XMPPStreamManagement Delegate
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+- (void)xmppStreamManagement:(XMPPStreamManagement *)sender didReceiveAckForStanzaIds:(NSArray *)stanzaIds
+{
+    DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    [self.delegate onReceiveAck:stanzaIds];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma mark XMPPStream Delegate
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -388,7 +399,7 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
     isXmppConnected = YES;
 
     NSError *error = nil;
-    [self.delegate onConnnect:username password:password];
+    [self.delegate onConnect:username password:password];
 
     id <XMPPSASLAuthentication> someAuth = nil;
 
@@ -424,6 +435,8 @@ static const int ddLogLevel = LOG_LEVEL_INFO;
 - (void)xmppStreamDidAuthenticate:(XMPPStream *)sender
 {
     DDLogVerbose(@"%@: %@", THIS_FILE, THIS_METHOD);
+    [xmppStreamMgt enableStreamManagementWithResumption:NO maxTimeout:0];
+    [xmppStreamMgt automaticallyRequestAcksAfterStanzaCount:1 orTimeout:0];
 
     [self goOnline];
     [self.delegate onLogin:username password:password];

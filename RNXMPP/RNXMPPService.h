@@ -11,14 +11,8 @@
 #import "XMPP.h"
 #import "XMPPStreamManagementMemoryStorage.h"
 #import "XMPPReconnect.h"
-#import "XMPPDateTimeProfiles.h"
-#import "NSDate+XMPPDateTimeProfiles.h"
-#import "XMPPMUC.h"
-#import "XMPPRoom.h"
-#import "XMPPRoster.h"
-#import "XMPPRosterMemoryStorage.h"
 #import "RNXMPPConstants.h"
-#import "XMPPAutoPing.h"
+//#import "XMPPAutoPing.h"
 
 @protocol RNXMPPServiceDelegate <NSObject>
 
@@ -26,11 +20,11 @@
 -(void)onMessage:(XMPPMessage *)message;
 -(void)onPresence:(XMPPPresence *)presence;
 -(void)onIQ:(XMPPIQ *)iq;
--(void)onRosterReceived:(NSArray *)list;
 -(void)onDisconnect:(NSError *)error;
--(void)onConnnect:(NSString *)username password:(NSString *)password;
+-(void)onConnect:(NSString *)username password:(NSString *)password;
 -(void)onLogin:(NSString *)username password:(NSString *)password;
 -(void)onLoginError:(NSError *)error;
+-(void)onReceiveAck:(NSArray *) stanzaIds;
 
 @end
 
@@ -38,7 +32,7 @@
 {
     XMPPStream *xmppStream;
     XMPPReconnect *xmppReconnect;
-    XMPPAutoPing *xmppAutoPing;
+    //XMPPAutoPing *xmppAutoPing;
     NSArray *trustedHosts;
     NSString *username;
     NSString *password;
@@ -51,7 +45,7 @@
 @property (nonatomic, strong, readonly) XMPPReconnect *xmppReconnect;
 @property (nonatomic, strong, readonly) XMPPStreamManagementMemoryStorage *xmppStreamStorage;
 @property (nonatomic, strong, readonly) XMPPStreamManagement *xmppStreamMgt;
-@property (nonatomic, strong, readonly) XMPPAutoPing *xmppAutoPing;
+//@property (nonatomic, strong, readonly) XMPPAutoPing *xmppAutoPing;
 @property (nonatomic, weak) id<RNXMPPServiceDelegate> delegate;
 
 +(RNXMPPService *) sharedInstance;
@@ -59,7 +53,7 @@
 - (BOOL)setup:(NSString *)myJID withPassword:(NSString *)myPassword auth:(AuthMethod)auth hostname:(NSString *)hostname port:(int)port;
 - (BOOL)connect;
 - (void)disconnect;
--(void)sendStanza:(NSString *)stanza;
+- (void)sendStanza:(NSString *)stanza;
 
 @end
 
