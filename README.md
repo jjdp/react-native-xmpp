@@ -10,6 +10,7 @@ var XMPP = require('react-native-basic-xmpp');
 
 // optional callbacks
 XMPP.on('stanza', (message)=>console.log("STANZA:"+JSON.stringify(message)));
+XMPP.on('receiveAckIos', (stanzaIds)=>console.log("Stanza Ids:"+stanzaIds)); //ios only
 XMPP.on('error', (message)=>console.log("ERROR:"+message));
 XMPP.on('loginError', (message)=>console.log("LOGIN ERROR:"+message));
 XMPP.on('login', (message)=>console.log("LOGGED!"));
