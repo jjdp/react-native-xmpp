@@ -70,7 +70,8 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
                 .setUsernameAndPassword(jidParts[0], password)
                 .setConnectTimeout(3000)
                 //.setDebuggerEnabled(true)
-                .setSecurityMode(ConnectionConfiguration.SecurityMode.required);
+                .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
+				.setKeystoreType(null);
 
             if (serviceNameParts.length > 1) {
                 confBuilder.setResource(serviceNameParts[1]);
