@@ -132,7 +132,7 @@ public class XmppServiceSmackImpl implements XmppService, StanzaListener, Connec
                     if (!connection.isAuthenticated()) {
                         connection.login();
                     }
-                } catch (InterruptedException| XMPPException | SmackException | IOException e) {
+                } catch (NullPointerException | InterruptedException | XMPPException | SmackException | IOException e) {
                     logger.log(Level.SEVERE, "Could not login user", e);
                     if (e instanceof SASLErrorException) {
                         XmppServiceSmackImpl.this.xmppServiceListener.onLoginError(((SASLErrorException) e).getSASLFailure().toString());
